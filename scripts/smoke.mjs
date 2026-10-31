@@ -101,6 +101,13 @@ check('mode is off by default (no flag, no section)', ctx1.state.sections.length
 check('registers adhd_on / adhd_off / adhd_status',
   ['adhd_on', 'adhd_off', 'adhd_status'].every((n) => ctx1.state.tools.has(n)))
 
+// dsh-tools register() validates output.schema against a fixed JSON Schema
+// subset and throws on anything else; the mock above does not, so the subset
+// is asserted here or a bad type ships as silently missing tools.
+const SUPPORTED_SCHEMA_TYPES = new Set(['object', 'array', 'string', 'number', 'integer', 'boolean', 'null'])
+check('tool output schemas use a dsh-tools-supported type',
+  [...ctx1.state.tools.values()].every((tool) => SUPPORTED_SCHEMA_TYPES.has(tool.output?.schema?.type)))
+
 // 4b. adhd_on registers the section and persists the flag
 await ctx1.state.tools.get('adhd_on').execute()
 check('adhd_on registers one section', ctx1.state.sections.length === 1)
